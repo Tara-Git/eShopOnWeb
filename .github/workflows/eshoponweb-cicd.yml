@@ -2,15 +2,15 @@ name: eShopOnWeb Build and Test
 
 # Second try
 #Triggers (uncomment line below to use it)
-on: [push, workflow_dispatch]
+#on: [push, workflow_dispatch]
 
 #Environment variables https://docs.github.com/en/actions/learn-github-actions/environment-variables
 env:
   RESOURCE-GROUP: rg-eshoponweb-ttest
-  LOCATION: eastus
+  LOCATION: eastus2
   TEMPLATE-FILE: infra/webapp.bicep
   SUBSCRIPTION-ID: 3d93b077-4300-434c-bb36-f956ec998b21
-  # WEBAPP-NAME: eshoponweb-webapp56027040
+  WEBAPP-NAME: eshoponweb-webapp56027040
 
 
 jobs:
@@ -29,8 +29,8 @@ jobs:
     #Build/Test/Publish the .net project
     - name: Build with dotnet
       run: dotnet build ./eShopOnWeb.sln --configuration Release
-    # - name: Test with dotnet
-    #   run: dotnet test ./eShopOnWeb.sln --configuration Release
+    - name: Test with dotnet
+      run: dotnet test ./eShopOnWeb.sln --configuration Release
     - name: dotnet publish
       run: |
         dotnet publish ./src/Web/Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -77,68 +77,30 @@ jobs:
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
-    - name: List Bicep folder
-      run: ls -R bicep-template
-      
-    # - name: Build Bicep to JSON
-    #   run: bicep build bicep-template/webapp.bicep --outdir bicep-template
-       
-    # # Deploy Azure WebApp using Bicep file
-    # - name: Deploy Azure WebApp using Bicep
-    #   uses: azure/cli@v2
-    #   with:
-    #     inlineScript: |
-    #       # Navigate to the Bicep template folder
-    #       cd bicep-template
-    #       # Deploy the template using CLI, defaults will be used for parameters
-    #       az deployment group create \
-    #         --resource-group ${{ env.RESOURCE-GROUP }} \
-    #         --template-file webapp.bicep \
-    #         --verbose
+           
+    # Deploy Azure WebApp using Bicep file
+    - name: deploy
+      uses: azure/arm-deploy@v2
+      with:
+        subscriptionId: ${{ env.SUBSCRIPTION-ID }}
+        resourceGroupName: ${{ env.RESOURCE-GROUP }}
+        template: bicep-template/webapp.bicep
+        parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
+        failOnStdErr: false   
     
-    # # Publish website to Azure App Service (WebApp)
-    # # Step disabled due to issue where the site sometimes can't be found: https://github.com/microsoft/pipelines-appservice-lib/issues/56. Instead deploy using CLI
-    # - name: Publish Website to WebApp
-    #   if: false #Disable step due to comment above
-    #   uses: Azure/webapps-deploy@v3
-    #   with:
-    #     type: ZIP
-    #     app-name: ${{ env.WEBAPP-NAME  }}
-    #     package: .net-app/app.zip
+    # Publish website to Azure App Service (WebApp)
+    # Step disabled due to issue where the site sometimes can't be found: https://github.com/microsoft/pipelines-appservice-lib/issues/56. Instead deploy using CLI
+    - name: Publish Website to WebApp
+      if: false #Disable step due to comment above
+      uses: Azure/webapps-deploy@v3
+      with:
+        type: ZIP
+        app-name: ${{ env.WEBAPP-NAME  }}
+        package: .net-app/app.zip
 
-    # # Publish website to Azure App Service using CLI (WebApp)
-    # - name: Publish Website to WebApp
-    #   uses: Azure/cli@v2
-    #   with:
-    #     inlineScript: |
-    #          az webapp deploy --name ${{ env.WEBAPP-NAME }} --resource-group ${{ env.RESOURCE-GROUP }} --src-path .net-app/app.zip --type zip
-
-
-    - name: Install Bicep CLI
-      run: |
-        az bicep install
-
-    - name: Deploy Bicep Template
-      id: deploy_bicep
-      run: |
-        # Deploy Bicep using defaults; output the web app name
-        az deployment group create \
-        --resource-group ${{ env.RESOURCE-GROUP }} \
-        --template-file bicep-template/webapp.bicep \
-        --verbose
-
-    - name: Read WebApp Name
-      id: webapp_name
-      run: |
-        echo "WEBAPP_NAME=$(cat webapp_name.txt)" >> $GITHUB_ENV
-
-    - name: Deploy .NET App to Azure WebApp
+    # Publish website to Azure App Service using CLI (WebApp)
+    - name: Publish Website to WebApp
       uses: Azure/cli@v2
       with:
         inlineScript: |
-          az webapp deploy \
-            --resource-group ${{ env.RESOURCE-GROUP }} \
-            --name ${{ env.WEBAPP_NAME }} \
-            --src-path dotnet-app/app.zip \
-              --type zip
+             az webapp deploy --name ${{ env.WEBAPP-NAME }} --resource-group ${{ env.RESOURCE-GROUP }} --src-path .net-app/app.zip --type zip
