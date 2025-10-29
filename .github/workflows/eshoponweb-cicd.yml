@@ -85,13 +85,17 @@ jobs:
       run: bicep build bicep-template/webapp.bicep --outdir bicep-template
        
     # Deploy Azure WebApp using Bicep file
-    - name: Deploy ARM template
-      uses: azure/arm-deploy@v2
+    - name: Deploy Azure WebApp using Bicep
+      uses: azure/cli@v2
       with:
-        subscriptionId: ${{ env.SUBSCRIPTION-ID }}
-        resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: bicep-template/webapp.json
-        failOnStdErr: true  
+        inlineScript: |
+          # Navigate to the Bicep template folder
+          cd bicep-template
+          # Deploy the template using CLI, defaults will be used for parameters
+          az deployment group create \
+            --resource-group ${{ env.RESOURCE-GROUP }} \
+            --template-file webapp.bicep \
+            --verbose
     
     # Publish website to Azure App Service (WebApp)
     # Step disabled due to issue where the site sometimes can't be found: https://github.com/microsoft/pipelines-appservice-lib/issues/56. Instead deploy using CLI
