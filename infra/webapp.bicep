@@ -1,12 +1,9 @@
-# param webAppName string = uniqueString(resourceGroup().id) // Unique web app name
-# param sku string = 'S1'                                   // App Service Plan SKU
-# param location string = resourceGroup().location          // Location
-
+// Hardcoded Web App Name and SKU
 var webAppName = 'eshoponweb-webapp56027040'
-var appServicePlanName = 'AppServicePlan-${webAppName}'
+var appServicePlanName = 'appserviceplan-eshoponweb-webapp56027040'
+var skuName = 'S1'
 
-var appServicePlanName = toLower('AppServicePlan-${webAppName}')
-
+// App Service Plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: appServicePlanName
   location: resourceGroup().location
@@ -14,9 +11,11 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     reserved: true
   }
   sku: {
-    name: sku
+    name: skuName
   }
 }
+
+// Web App
 resource appService 'Microsoft.Web/sites@2022-09-01' = {
   name: webAppName
   kind: 'app'
@@ -38,3 +37,6 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
     }
   }
 }
+
+// Optional: output the web app name
+output webAppNameOutput string = appService.name
