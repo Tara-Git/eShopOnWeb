@@ -1,8 +1,6 @@
-
-var sku  = 'S1' // The SKU of App Service Plan
-
-var webAppName  = eshoponweb-webapp56027040
-var location = resourceGroup().location
+param webAppName string = uniqueString(resourceGroup().id) // Unique web app name
+param sku string = 'S1'                                   // App Service Plan SKU
+param location string = resourceGroup().location          // Location
 
 var appServicePlanName = toLower('AppServicePlan-${webAppName}')
 
