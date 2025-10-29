@@ -80,14 +80,17 @@ jobs:
         
     - name: List Bicep folder
       run: ls -R bicep-template
+      
+    - name: Build Bicep to JSON
+      run: bicep build bicep-template/webapp.bicep --outdir bicep-template
        
     # Deploy Azure WebApp using Bicep file
-    - name: Deploy Azure WebApp using Bicep
+    - name: Deploy ARM template
       uses: azure/arm-deploy@v2
       with:
         subscriptionId: ${{ env.SUBSCRIPTION-ID }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: bicep-template/webapp.bicep
+        template: bicep-template/webapp.json
         failOnStdErr: true  
     
     # Publish website to Azure App Service (WebApp)
