@@ -77,7 +77,10 @@ jobs:
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-           
+        
+    - name: List Bicep folder
+      run: ls -R bicep-template
+       
     # Deploy Azure WebApp using Bicep file
     - name: deploy
       uses: azure/arm-deploy@v2
@@ -85,7 +88,7 @@ jobs:
         subscriptionId: ${{ env.SUBSCRIPTION-ID }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
         template: bicep-template/webapp.bicep
-        parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
+        parameters: '{"webAppName":"eshoponweb-webapp56027040","location":"eastus2"}'
         failOnStdErr: false   
     
     # Publish website to Azure App Service (WebApp)
