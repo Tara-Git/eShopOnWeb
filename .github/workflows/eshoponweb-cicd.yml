@@ -124,10 +124,9 @@ jobs:
       run: |
         # Deploy Bicep using defaults; output the web app name
         az deployment group create \
-          --resource-group ${{ env.RESOURCE-GROUP }} \
-          --template-file bicep-template/webapp.bicep \
-          --query "properties.outputs.webAppName.value" \
-          --output tsv > webapp_name.txt
+        --resource-group ${{ env.RESOURCE-GROUP }} \
+        --template-file bicep-template/webapp.bicep \
+        --verbose
 
     - name: Read WebApp Name
       id: webapp_name
